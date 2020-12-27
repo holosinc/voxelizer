@@ -1,13 +1,13 @@
 #define VOXELIZER_DEBUG
 #define VOXELIZER_IMPLEMENTATION
-#include "../voxelizer.h"
+#include "voxelizer.h"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
 
-#define TRIANGULATE
+//#define TRIANGULATE
 #define POINT_CLOUD
 
 int main(int argc, char** argv) {
