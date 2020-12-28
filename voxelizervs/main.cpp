@@ -47,9 +47,9 @@ int main(int argc, char** argv) {
 	min_coords.y = 0.0f;
 	min_coords.z = 0.0f;
 	vx_vertex_t max_coords;
-	max_coords.x = 1.0f;
-	max_coords.y = 1.0f;
-	max_coords.z = 1.0f;
+	max_coords.x = 0.0f;
+	max_coords.y = 0.0f;
+	max_coords.z = 0.0f;
 
 	bool firstVertex = true;
 
