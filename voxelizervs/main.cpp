@@ -6,14 +6,15 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 
 //#define TRIANGULATE
 #define POINT_CLOUD
 
 int main(int argc, char** argv) {
-    if (argc < 4) {
+    if (argc != 5) {
         std::cout << "Usage: " << std::endl;
-        std::cout << "\t./voxelizer file.obj resolution precision" << std::endl;
+        std::cout << "\t./voxelizer file.obj output.txt maxsize precision" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -35,11 +36,56 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef POINT_CLOUD
-    std::ofstream file("mesh_voxelized_res.txt");
+    std::ofstream file(argv[2]);
 #endif
 
     size_t voffset = 0;
     size_t noffset = 0;
+
+	vx_vertex_t min_coords;
+	min_coords.x = 0.0f;
+	min_coords.y = 0.0f;
+	min_coords.z = 0.0f;
+	vx_vertex_t max_coords;
+	max_coords.x = 1.0f;
+	max_coords.y = 1.0f;
+	max_coords.z = 1.0f;
+
+	bool firstVertex = true;
+
+	for (size_t i = 0; i < shapes.size(); i++) {
+		for (size_t v = 0; v < shapes[i].mesh.positions.size() / 3; v++) {
+			float xx = shapes[i].mesh.positions[3 * v + 0];
+			float yy = shapes[i].mesh.positions[3 * v + 1];
+			float zz = shapes[i].mesh.positions[3 * v + 2];
+			if (firstVertex) {
+				firstVertex = false;
+				min_coords.x = xx;
+				min_coords.y = yy;
+				min_coords.z = zz;
+				max_coords.x = xx;
+				max_coords.y = yy;
+				max_coords.z = zz;
+			} else {
+				min_coords.x = std::min(min_coords.x, xx);
+				min_coords.y = std::min(min_coords.y, yy);
+				min_coords.z = std::min(min_coords.z, zz);
+				max_coords.x = std::max(max_coords.x, xx);
+				max_coords.y = std::max(max_coords.y, yy);
+				max_coords.z = std::max(max_coords.z, zz);
+			}
+		}
+	}
+
+	float dx = max_coords.x - min_coords.x;
+	float dy = max_coords.y - min_coords.y;
+	float dz = max_coords.z - min_coords.z;
+
+	float dmax = std::max(dx, std::max(dy, dz));
+	int maxsize = std::atoi(argv[3]);
+	float voxelsize = dmax / maxsize;
+
+	float precision = std::atof(argv[4]);
 
     for (size_t i = 0; i < shapes.size(); i++) {
         vx_mesh_t* mesh;
@@ -55,12 +101,9 @@ int main(int argc, char** argv) {
             mesh->vertices[v].z = shapes[i].mesh.positions[3*v+2];
         }
 
-        float res = std::atof(argv[2]);
-        float precision = std::atof(argv[3]);
-
 #ifdef TRIANGULATE
         vx_mesh_t* result;
-        result = vx_voxelize(mesh, res, res, res, precision);
+        result = vx_voxelize(mesh, voxelsize, voxelsize, voxelsize, precision);
 
         printf("Number of vertices: %ld\n", result->nvertices);
         printf("Number of indices: %ld\n", result->nindices);
@@ -109,7 +152,7 @@ int main(int argc, char** argv) {
 
 #ifdef POINT_CLOUD
         vx_point_cloud_t* result;
-        result = vx_voxelize_pc(mesh, res, res, res, precision);
+        result = vx_voxelize_pc(mesh, voxelsize, voxelsize, voxelsize, precision);
 
         printf("Number of vertices: %ld\n", result->nvertices);
 
