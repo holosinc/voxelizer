@@ -85,6 +85,8 @@ int main(int argc, char** argv) {
 	int maxsize = std::atoi(argv[3]);
 	float voxelsize = dmax / maxsize;
 
+	file << voxelsize;
+
 	float precision = std::atof(argv[4]);
 
     for (size_t i = 0; i < shapes.size(); i++) {
@@ -157,11 +159,11 @@ int main(int argc, char** argv) {
         printf("Number of vertices: %ld\n", result->nvertices);
 
         if (file.is_open()) {
-            file << "\n";
             for (int j = 0; j < result->nvertices; ++j) {
-                file << result->vertices[j].x << " "
+                file << "\n"
+					 << result->vertices[j].x << " "
                      << result->vertices[j].y << " "
-                     << result->vertices[j].z << "\n";
+                     << result->vertices[j].z;
             }
         }
 
